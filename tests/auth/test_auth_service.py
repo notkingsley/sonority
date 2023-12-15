@@ -1,5 +1,6 @@
-import pytest
+from uuid import UUID
 
+import pytest
 from sonority.auth.exceptions import (
     AuthenticationError,
     PasswordChangeError,
@@ -44,7 +45,7 @@ def test_get_user_by_id_invalid_id(session: Session):
     """
     Test that a user cannot be retrieved by an invalid id
     """
-    user = get_user_by_id(session, 1)
+    user = get_user_by_id(session, UUID("00000000-0000-0000-0000-000000000000"))
     assert user is None
 
 
