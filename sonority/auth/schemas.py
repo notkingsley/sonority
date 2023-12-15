@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 
@@ -38,7 +40,7 @@ class UserOutSchema(BaseUserSchema):
     Schema for outputting a user.
     """
 
-    id: int
+    id: UUID
 
     model_config = ConfigDict(from_attributes=True, **BaseUserSchema.model_config)
 

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import os
+from uuid import UUID
 
 from dotenv import load_dotenv
 from jose import jwt, JWTError
@@ -22,7 +23,7 @@ class TokenData(BaseModel):
     Data stored in a token
     """
 
-    user_id: int
+    user_id: UUID
 
 
 def hash_password(password: str):
@@ -54,7 +55,7 @@ def decode_token(token: str):
     if sub is None:
         return None
 
-    return TokenData(user_id=int(sub))
+    return TokenData(user_id=UUID(sub))
 
 
 def make_token(token_data: TokenData):

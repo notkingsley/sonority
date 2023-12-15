@@ -1,4 +1,5 @@
 from typing import Annotated, Union
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.exceptions import RequestValidationError
@@ -99,7 +100,7 @@ def change_password(
 
 
 @router.get("/{user_id}", response_model=Union[UserOutSchema, None])
-def get_user(db: Session, user_id: int):
+def get_user(db: Session, user_id: UUID):
     """
     Get a user by id
     """

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -23,7 +25,7 @@ from sonority.auth.utils import (
 )
 
 
-def get_user_by_id(db: Session, user_id: int):
+def get_user_by_id(db: Session, user_id: UUID):
     """
     Get a User from the database
     """
