@@ -1,9 +1,8 @@
 from fastapi.testclient import TestClient
 import pytest
-from sqlalchemy_utils import create_database, database_exists, drop_database
 
-from sonority.database import drop_db, init_db
 from tests.database import TEST_DATABSE_URL, Session
+from tests import utils
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -11,6 +10,8 @@ def make_test_db():
 	"""
 	Create a clean database on each test run.
 	"""
+	from sqlalchemy_utils import create_database, database_exists, drop_database
+
 	if database_exists(TEST_DATABSE_URL):
 		drop_database(TEST_DATABSE_URL)
 	create_database(TEST_DATABSE_URL)
@@ -23,6 +24,8 @@ def make_test_tables(make_test_db: None):
 	"""
 	Create clean database tables on each test run.
 	"""
+	from sonority.database import drop_db, init_db
+
 	init_db(url=TEST_DATABSE_URL)
 	yield
 	drop_db(url=TEST_DATABSE_URL)
@@ -60,6 +63,30 @@ def override_db_session(testapp):
 
 
 @pytest.fixture(scope="function")
+def registered_user(session: Session):
+	"""
+	Return a registered user
+	"""
+	return utils.create_test_user(session)
+
+
+@pytest.fixture(scope="function")
+def user(session: Session):
+	"""
+	Return a registered user
+	"""
+	return utils.create_test_user(session)
+
+
+@pytest.fixture(scope="function")
+def artist(session: Session, user):
+	"""
+	Return an artist
+	"""
+	return utils.create_test_artist(session, user)
+
+
+@pytest.fixture(scope="function")
 def raw_client(testapp, override_db_session, make_test_tables):
 	"""
 	Returns an unauthenticated test client instance.
@@ -85,5 +112,5 @@ def client(raw_client: TestClient):
 	)
 	token = response.json()["access_token"]
 	raw_client.headers.update({"Authorization": f"Bearer {token}"})
-	
+
 	yield raw_client

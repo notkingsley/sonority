@@ -116,20 +116,6 @@ def test_register_user(session: Session):
     assert db_user.pwd_hash != user_schema.password
 
 
-@pytest.fixture
-def registered_user(session: Session):
-    """
-    Return a registered user
-    """
-    user_schema = UserCreateSchema(
-        email="testemail@example.com",
-        full_name="Test User",
-        username="testuser",
-        password="testpassword",
-    )
-    return register_user(session, user_schema)
-
-
 def test_register_user_duplicate_email(session: Session, registered_user: User):
     """
     Test that a user cannot be registered with a duplicate email
