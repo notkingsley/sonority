@@ -1,5 +1,9 @@
+from uuid import UUID
+
 from fastapi.testclient import TestClient
 import pytest
+
+from tests import utils
 
 
 def test_register_user(raw_client: TestClient):
@@ -136,33 +140,32 @@ def test_login_user_invalid_email(raw_client: TestClient, registered_user: None)
     assert "value is not a valid email address" in response.json()["detail"][0]["msg"]
 
 
-@pytest.fixture(scope="function")
-def registered_user_id(raw_client: TestClient):
-    """
-    Register a user for use in other tests and return their id
-    """
-    data = {
-        "username": "testuser",
-        "email": "testemail@example.com",
-        "password": "testpassword",
-        "full_name": "Test User",
-    }
-    response = raw_client.post("/users/register", json=data)
-    return response.json()["id"]
-
-
-def test_get_user(raw_client: TestClient, registered_user_id: str):
+def test_get_user(client: TestClient):
     """
     Test that a user can be retrieved by id
     """
-    response = raw_client.get(f"/users/{registered_user_id}")
+    user_id = client.get("/users/me").json()["id"]
+    client2 = utils.create_randomized_test_client()
+    response = client2.get(f"/users/{user_id}")
     assert response.status_code == 200
     assert response.json() == {
-        "id": registered_user_id,
+        "id": user_id,
         "username": "testuser",
         "email": "testemail@example.com",
         "full_name": "Test User",
     }
+
+
+def test_get_user_not_found(raw_client: TestClient):
+    """
+    Test that a user cannot be retrieved by an invalid id
+    """
+    response = raw_client.get(f"/users/{UUID('00000000-0000-0000-0000-000000000000')}")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "user not found"}
+
+    response = raw_client.get(f"/users/invalidid")
+    assert response.status_code == 422
 
 
 def test_get_user_me(client: TestClient):
