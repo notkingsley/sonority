@@ -17,3 +17,5 @@ class Artist(Base):
     name: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)
     description: Mapped[str] = mapped_column(nullable=True)
     is_verified: Mapped[bool] = mapped_column(default=False)
+
+    follower_count = 0  # TODO: Implement followers

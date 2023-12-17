@@ -20,3 +20,27 @@ class ArtistExists(Exception):
     """
 
     pass
+
+
+class DeniedNotArtist(Exception):
+    """
+    Raised when a user is not an artist.
+    """
+
+    pass
+
+
+class ArtistNotFound(Exception):
+    """
+    Raised when an artist cannot be found.
+    """
+
+    pass
+
+
+class BadParameters(Exception):
+    """
+    Raised when bad parameters are provided.
+    """
+
+    pass

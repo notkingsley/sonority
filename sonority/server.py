@@ -1,27 +1,18 @@
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
-from sonority import auth, database
+from sonority import artists, auth
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    Context manager for the lifespan of the app.
-    """
-    import asyncio
+exception_handlers = {
+    **artists.exception_handlers,
+    **auth.exception_handlers,
+}
 
-    loop = asyncio.get_event_loop()
-
-    await loop.run_in_executor(None, database.init_db)
-    yield
-
-
-app = FastAPI(lifespan=lifespan, exception_handlers={**auth.exception_handlers})
+app = FastAPI(exception_handlers=exception_handlers)
 
 app.include_router(auth.router)
+app.include_router(artists.router)
 
 
 @app.get("/")
@@ -31,4 +22,4 @@ async def root():
 
 @app.get("/ping")
 async def ping():
-    return {"Sonority": "pong!"}
+    return {"sonority": "pong!"}
