@@ -109,10 +109,11 @@ def create_test_artist(session: Session, user: User) -> Artist:
     return create_artist(session, artist_schema, user)
 
 
-def create_randomized_test_artist(session: Session, user: User) -> Artist:
+def create_randomized_test_artist(session: Session, user: User | None = None) -> Artist:
     """
     Create a randomized test artist
     """
+    user = user or create_randomized_test_user(session)
     artist_schema = ArtistCreateSchema(
         name=f"Test Artist {secrets.token_hex(16)}",
         description=f"Test Description {secrets.token_hex(16)}",

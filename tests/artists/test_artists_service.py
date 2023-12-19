@@ -4,14 +4,19 @@ import pytest
 from sonority.artists.exceptions import (
     ArtistExists,
     ArtistNameInUse,
+    CannotFollowSelf,
     VerifiedArtistIsImmutable,
 )
 from sonority.artists.models import Artist
 from sonority.artists.service import (
     create_artist,
     delete_artist,
+    follow_artist,
+    follows,
     get_artist_by_id,
     get_artist_by_name,
+    get_follows,
+    unfollow_artist,
     update_artist,
     verify_artist,
 )
@@ -197,3 +202,176 @@ def test_verify_artist_already_verified(session: Session, artist: Artist):
         verify_artist(session, artist)
 
     assert exc_info.value.args[0] == "Artist is already verified"
+
+
+def test_follow_artist(session: Session, artist: Artist):
+    """
+    Test following an artist
+    """
+    user = create_randomized_test_user(session)
+    followed = follow_artist(session, artist, user)
+    assert followed is True
+    assert follows(session, user, artist) is True
+
+
+def test_follow_artist_already_following(session: Session, artist: Artist):
+    """
+    Test following an artist that is already being followed
+    """
+    user = create_randomized_test_user(session)
+    follow_artist(session, artist, user)
+    assert follows(session, user, artist) is True
+
+    followed = follow_artist(session, artist, user)
+    assert followed is False
+    assert follows(session, user, artist) is True
+
+
+def test_follow_artist_cannot_follow_self(session: Session, artist: Artist, user):
+    """
+    Test following an artist that is the user
+    """
+    with pytest.raises(CannotFollowSelf) as exc_info:
+        follow_artist(session, artist, user)
+
+    assert exc_info.value.args[0] == "Cannot follow self"
+    assert follows(session, user, artist) is False
+
+
+def test_unfollow_artist(session: Session, artist: Artist):
+    """
+    Test unfollowing an artist
+    """
+    user = create_randomized_test_user(session)
+    follow_artist(session, artist, user)
+    assert follows(session, user, artist) is True
+
+    unfollowed = unfollow_artist(session, artist, user)
+    assert unfollowed is True
+    assert follows(session, user, artist) is False
+
+
+def test_unfollow_artist_not_following(session: Session, artist: Artist):
+    """
+    Test unfollowing an artist that is not being followed
+    """
+    user = create_randomized_test_user(session)
+    assert follows(session, user, artist) is False
+
+    unfollowed = unfollow_artist(session, artist, user)
+    assert unfollowed is False
+    assert follows(session, user, artist) is False
+
+
+def test_get_follows(session: Session):
+    """
+    Test getting follows for a user
+    """
+    user = create_randomized_test_user(session)
+    artist1 = create_randomized_test_artist(session)
+    artist2 = create_randomized_test_artist(session)
+    artist3 = create_randomized_test_artist(session)
+    follow_artist(session, artist1, user)
+    follow_artist(session, artist2, user)
+    follow_artist(session, artist3, user)
+
+    follows = get_follows(session, user, skip=0, take=20)
+    assert len(follows) == 3
+    assert artist1 in follows
+    assert artist2 in follows
+    assert artist3 in follows
+
+
+def test_get_follows_skip(session: Session):
+    """
+    Test getting follows for a user with skip
+    """
+    user = create_randomized_test_user(session)
+    artist1 = create_randomized_test_artist(session)
+    artist2 = create_randomized_test_artist(session)
+    artist3 = create_randomized_test_artist(session)
+    follow_artist(session, artist1, user)
+    follow_artist(session, artist2, user)
+    follow_artist(session, artist3, user)
+
+    follows = get_follows(session, user, skip=1, take=20)
+    assert len(follows) == 2
+    assert artist1 in follows
+    assert artist2 in follows
+    assert artist3 not in follows
+
+
+def test_get_follows_take(session: Session):
+    """
+    Test getting follows for a user with take
+    """
+    user = create_randomized_test_user(session)
+    artist1 = create_randomized_test_artist(session)
+    artist2 = create_randomized_test_artist(session)
+    artist3 = create_randomized_test_artist(session)
+    follow_artist(session, artist1, user)
+    follow_artist(session, artist2, user)
+    follow_artist(session, artist3, user)
+
+    follows = get_follows(session, user, skip=0, take=2)
+    assert len(follows) == 2
+    assert artist1 not in follows
+    assert artist2 in follows
+    assert artist3 in follows
+
+
+def test_get_follows_skip_take(session: Session):
+    """
+    Test getting follows for a user with skip and take
+    """
+    user = create_randomized_test_user(session)
+    artist1 = create_randomized_test_artist(session)
+    artist2 = create_randomized_test_artist(session)
+    artist3 = create_randomized_test_artist(session)
+    follow_artist(session, artist1, user)
+    follow_artist(session, artist2, user)
+    follow_artist(session, artist3, user)
+
+    follows = get_follows(session, user, skip=1, take=1)
+    assert len(follows) == 1
+    assert artist1 not in follows
+    assert artist2 in follows
+    assert artist3 not in follows
+
+
+def test_get_follows_not_following(session: Session, user):
+    """
+    Test getting follows for a user that is not following anyone
+    """
+    follows = get_follows(session, user, skip=0, take=20)
+    assert len(follows) == 0
+
+
+def test_get_follows_skip_too_large(session: Session):
+    """
+    Test getting follows for a user with skip that is too large
+    """
+    user = create_randomized_test_user(session)
+    artist1 = create_randomized_test_artist(session)
+    artist2 = create_randomized_test_artist(session)
+    artist3 = create_randomized_test_artist(session)
+    follow_artist(session, artist1, user)
+    follow_artist(session, artist2, user)
+    follow_artist(session, artist3, user)
+
+    follows = get_follows(session, user, skip=3, take=20)
+    assert len(follows) == 0
+
+
+def test_artist_follower_count(session: Session, artist: Artist):
+    """
+    Test the follower count for an artist
+    """
+    user1 = create_randomized_test_user(session)
+    user2 = create_randomized_test_user(session)
+    user3 = create_randomized_test_user(session)
+    follow_artist(session, artist, user1)
+    follow_artist(session, artist, user2)
+    follow_artist(session, artist, user3)
+
+    assert get_artist_by_id(session, artist.id).follower_count == 3
