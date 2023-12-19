@@ -44,3 +44,11 @@ class BadParameters(Exception):
     """
 
     pass
+
+
+class CannotFollowSelf(Exception):
+    """
+    Raised when a user attempts to follow themselves.
+    """
+
+    pass
