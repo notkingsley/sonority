@@ -212,6 +212,7 @@ def test_follow_artist(session: Session, artist: Artist):
     followed = follow_artist(session, artist, user)
     assert followed is True
     assert follows(session, user, artist) is True
+    assert get_artist_by_id(session, artist.id).follower_count == 1
 
 
 def test_follow_artist_already_following(session: Session, artist: Artist):
@@ -225,6 +226,7 @@ def test_follow_artist_already_following(session: Session, artist: Artist):
     followed = follow_artist(session, artist, user)
     assert followed is False
     assert follows(session, user, artist) is True
+    assert get_artist_by_id(session, artist.id).follower_count == 1
 
 
 def test_follow_artist_cannot_follow_self(session: Session, artist: Artist, user):
@@ -236,6 +238,7 @@ def test_follow_artist_cannot_follow_self(session: Session, artist: Artist, user
 
     assert exc_info.value.args[0] == "Cannot follow self"
     assert follows(session, user, artist) is False
+    assert get_artist_by_id(session, artist.id).follower_count == 0
 
 
 def test_unfollow_artist(session: Session, artist: Artist):
@@ -249,6 +252,7 @@ def test_unfollow_artist(session: Session, artist: Artist):
     unfollowed = unfollow_artist(session, artist, user)
     assert unfollowed is True
     assert follows(session, user, artist) is False
+    assert get_artist_by_id(session, artist.id).follower_count == 0
 
 
 def test_unfollow_artist_not_following(session: Session, artist: Artist):
@@ -261,6 +265,7 @@ def test_unfollow_artist_not_following(session: Session, artist: Artist):
     unfollowed = unfollow_artist(session, artist, user)
     assert unfollowed is False
     assert follows(session, user, artist) is False
+    assert get_artist_by_id(session, artist.id).follower_count == 0
 
 
 def test_get_follows(session: Session):
