@@ -156,15 +156,15 @@ def test_get_user(client: TestClient):
     }
 
 
-def test_get_user_not_found(raw_client: TestClient):
+def test_get_user_not_found(client: TestClient):
     """
     Test that a user cannot be retrieved by an invalid id
     """
-    response = raw_client.get(f"/users/{UUID('00000000-0000-0000-0000-000000000000')}")
+    response = client.get(f"/users/{UUID('00000000-0000-0000-0000-000000000000')}")
     assert response.status_code == 404
     assert response.json() == {"detail": "user not found"}
 
-    response = raw_client.get(f"/users/invalidid")
+    response = client.get(f"/users/invalidid")
     assert response.status_code == 422
 
 
@@ -338,7 +338,8 @@ def test_delete_user(client: TestClient):
     assert response.json() == {"detail": "Incorrect username or password"}
     assert response.headers["WWW-Authenticate"] == "Bearer"
 
-    response = client.get(f"/users/{id}")
+    client2 = utils.create_randomized_test_client()
+    response = client2.get(f"/users/{id}")
     assert response.status_code == 404
     assert response.json() == {"detail": "user not found"}
 
