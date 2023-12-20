@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import uuid4, UUID
 
 from sqlalchemy.orm import Mapped, mapped_column
@@ -13,3 +14,9 @@ class User(Base):
     full_name: Mapped[str] = mapped_column()
     username: Mapped[str] = mapped_column(unique=True, nullable=False)
     pwd_hash: Mapped[str] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        nullable=False, default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
