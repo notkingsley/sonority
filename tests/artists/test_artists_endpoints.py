@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi.testclient import TestClient
 
 from tests import utils
+from tests.utils import anything, DEFAULT_ARTIST_CREATE_INFO, DEFAULT_ARTIST_INFO
 
 
 def test_new_artist(client: TestClient):
@@ -11,22 +12,10 @@ def test_new_artist(client: TestClient):
     """
     response = client.post(
         "/artists/new",
-        json={
-            "name": "Test Artist",
-            "description": "Test Description",
-        },
+        json=DEFAULT_ARTIST_CREATE_INFO,
     )
     assert response.status_code == 201
-
-    response_json = response.json()
-    assert "id" in response_json
-    assert response_json == {
-        "id": response_json["id"],
-        "name": "Test Artist",
-        "description": "Test Description",
-        "is_verified": False,
-        "follower_count": 0,
-    }
+    assert response.json() == {**DEFAULT_ARTIST_INFO}
 
 
 def test_new_artist_already_exists(artist_client: TestClient):
@@ -35,10 +24,7 @@ def test_new_artist_already_exists(artist_client: TestClient):
     """
     response = artist_client.post(
         "/artists/new",
-        json={
-            "name": "Test Artist",
-            "description": "Test Description",
-        },
+        json=DEFAULT_ARTIST_CREATE_INFO,
     )
     assert response.status_code == 400
     assert response.json() == {"detail": "Artist already exists"}
@@ -51,10 +37,7 @@ def test_new_artist_name_in_use(artist_client: TestClient):
     client = utils.create_randomized_test_client()
     response = client.post(
         "/artists/new",
-        json={
-            "name": "Test Artist",
-            "description": "Test Description",
-        },
+        json=DEFAULT_ARTIST_CREATE_INFO,
     )
     assert response.status_code == 400
     assert response.json() == {"detail": "Artist name is already in use"}
@@ -68,16 +51,7 @@ def test_get_artist_by_id(artist_client: TestClient):
     client = utils.create_randomized_test_client()
     response = client.get(f"/artists?id={artist_id}")
     assert response.status_code == 200
-
-    response_json = response.json()
-    assert "id" in response_json
-    assert response_json == {
-        "id": artist_id,
-        "name": "Test Artist",
-        "description": "Test Description",
-        "is_verified": False,
-        "follower_count": 0,
-    }
+    assert response.json() == {**DEFAULT_ARTIST_INFO}
 
 
 def test_get_artist_by_id_not_found(client: TestClient):
@@ -99,16 +73,7 @@ def test_get_artist_by_name(artist_client: TestClient):
     client = utils.create_randomized_test_client()
     response = client.get("/artists?name=Test Artist")
     assert response.status_code == 200
-
-    response_json = response.json()
-    assert "id" in response_json
-    assert response_json == {
-        "id": response_json["id"],
-        "name": "Test Artist",
-        "description": "Test Description",
-        "is_verified": False,
-        "follower_count": 0,
-    }
+    assert response.json() == {**DEFAULT_ARTIST_INFO}
 
 
 def test_get_artist_by_name_not_found(client: TestClient):
@@ -137,16 +102,7 @@ def test_get_artist_me(artist_client: TestClient):
     """
     response = artist_client.get("/artists/me")
     assert response.status_code == 200
-
-    response_json = response.json()
-    assert "id" in response_json
-    assert response_json == {
-        "id": response_json["id"],
-        "name": "Test Artist",
-        "description": "Test Description",
-        "is_verified": False,
-        "follower_count": 0,
-    }
+    assert response.json() == {**DEFAULT_ARTIST_INFO}
 
 
 def test_get_artist_me_not_found(client: TestClient):
@@ -170,15 +126,10 @@ def test_update_artist(artist_client: TestClient):
         },
     )
     assert response.status_code == 200
-
-    response_json = response.json()
-    assert "id" in response_json
-    assert response_json == {
-        "id": response_json["id"],
+    assert response.json() == {
+        **DEFAULT_ARTIST_INFO,
         "name": "Test Artist 2",
         "description": "Test Description 2",
-        "is_verified": False,
-        "follower_count": 0,
     }
 
 
@@ -189,9 +140,7 @@ def test_update_artist_name_in_use(artist_client: TestClient):
     artist_client2 = utils.create_randomized_test_artist_client()
     response = artist_client2.patch(
         "/artists/me",
-        json={
-            "name": "Test Artist",
-        },
+        json={"name": DEFAULT_ARTIST_CREATE_INFO["name"]},
     )
     assert response.status_code == 400
     assert response.json() == {"detail": "Artist name is already in use"}
@@ -242,16 +191,7 @@ def test_verify_artist(artist_client: TestClient):
     """
     response = artist_client.post("/artists/me/verify")
     assert response.status_code == 200
-
-    response_json = response.json()
-    assert "id" in response_json
-    assert response_json == {
-        "id": response_json["id"],
-        "name": "Test Artist",
-        "description": "Test Description",
-        "is_verified": True,
-        "follower_count": 0,
-    }
+    assert response.json() == {**DEFAULT_ARTIST_INFO, "is_verified": True}
 
 
 def test_verify_artist_already_verified(artist_client: TestClient):
@@ -323,7 +263,6 @@ def test_follow_artist_not_artist(client: TestClient):
     assert response.json() == {"detail": "Artist not found"}
 
 
-
 def test_follow_artist_multiple_followers(artist_client: TestClient):
     """
     Test following an artist with multiple followers
@@ -392,13 +331,11 @@ def test_get_followed_artists(client: TestClient):
     assert len(response.json()) == 3
     for artist in response.json():
         assert "id" in artist
-        assert "name" in artist
-        assert "description" in artist
         assert artist == {
+            **DEFAULT_ARTIST_INFO,
+            "name": anything,
+            "description": anything,
             "id": artist["id"],
-            "name": artist["name"],
-            "description": artist["description"],
-            "is_verified": False,
             "follower_count": 1,
         }
 

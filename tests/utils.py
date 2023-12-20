@@ -12,16 +12,52 @@ from sonority.auth.service import register_user
 from tests.database import Session
 
 
+class Anything:
+    """
+    A class that will match any value
+    """
+
+    def __eq__(self, other):
+        return True
+
+
+anything = Anything()
+
+
+_BASE_DEFAULT_USER_INFO = {
+    "username": "testuser",
+    "email": "testemail@example.com",
+    "full_name": "Test User",
+}
+
+DEFAULT_USER_INFO = {
+    "id": anything,
+    **_BASE_DEFAULT_USER_INFO,
+}
+
+DEFAULT_USER_CREATE_INFO = {
+    "password": "testpassword",
+    **_BASE_DEFAULT_USER_INFO,
+}
+
+DEFAULT_ARTIST_CREATE_INFO = {
+    "name": "Test Artist",
+    "description": "Test Description",
+}
+
+DEFAULT_ARTIST_INFO = {
+    "id": anything,
+    "is_verified": False,
+    "follower_count": 0,
+    **DEFAULT_ARTIST_CREATE_INFO,
+}
+
+
 def create_test_user(session: Session) -> User:
     """
     Create a test user
     """
-    user_schema = UserCreateSchema(
-        email="testemail@example.com",
-        full_name="Test User",
-        username="testuser",
-        password="testpassword",
-    )
+    user_schema = UserCreateSchema(**DEFAULT_USER_CREATE_INFO)
     return register_user(session, user_schema)
 
 
@@ -30,10 +66,10 @@ def create_randomized_test_user(session: Session) -> User:
     Create a randomized test user
     """
     user_schema = UserCreateSchema(
-        email=f"{secrets.token_hex(16)}@example.com",
-        full_name="Test User",
+        email=f"email{secrets.token_hex(16)}@example.com",
         username=f"testuser{secrets.token_hex(16)}",
-        password="testpassword",
+        password=DEFAULT_USER_CREATE_INFO["password"],
+        full_name=f"Test User {secrets.token_hex(16)}",
     )
     return register_user(session, user_schema)
 
@@ -59,12 +95,7 @@ def create_test_client(client: TestClient | None = None) -> TestClient:
     Authenticate a test client
     """
     client = client or new_test_client()
-    data = {
-        "username": "testuser",
-        "email": "testemail@example.com",
-        "password": "testpassword",
-        "full_name": "Test User",
-    }
+    data = {**DEFAULT_USER_CREATE_INFO}
     client.post("/users/register", json=data)
 
     response = client.post(
@@ -82,10 +113,9 @@ def create_randomized_test_client() -> TestClient:
     """
     client = new_test_client()
     data = {
+        **DEFAULT_USER_CREATE_INFO,
         "username": f"testuser{secrets.token_hex(16)}",
-        "email": f"{secrets.token_hex(16)}@example.com",
-        "password": "testpassword",
-        "full_name": "Test User",
+        "email": f"email{secrets.token_hex(16)}@example.com",
     }
     client.post("/users/register", json=data)
 
@@ -102,10 +132,7 @@ def create_test_artist(session: Session, user: User) -> Artist:
     """
     Create a test artist
     """
-    artist_schema = ArtistCreateSchema(
-        name="Test Artist",
-        description="Test Description",
-    )
+    artist_schema = ArtistCreateSchema(**DEFAULT_ARTIST_CREATE_INFO)
     return create_artist(session, artist_schema, user)
 
 
@@ -125,10 +152,7 @@ def create_test_artist_client(client: TestClient) -> TestClient:
     """
     Authenticate a test client as an artist
     """
-    data = {
-        "name": "Test Artist",
-        "description": "Test Description",
-    }
+    data = {**DEFAULT_ARTIST_CREATE_INFO}
     client.post("/artists/new", json=data)
 
     return client

@@ -25,6 +25,7 @@ from tests.database import Session
 from tests.utils import (
     create_randomized_test_artist,
     create_randomized_test_user,
+    DEFAULT_ARTIST_CREATE_INFO,
 )
 
 
@@ -32,10 +33,7 @@ def test_create_artist(session: Session, user):
     """
     Test creating an artist
     """
-    artist_schema = ArtistCreateSchema(
-        name="Test Artist",
-        description="Test Description",
-    )
+    artist_schema = ArtistCreateSchema(**DEFAULT_ARTIST_CREATE_INFO)
     artist = create_artist(session, artist_schema, user)
     assert artist.id == user.id
     assert artist.name == artist_schema.name
@@ -67,7 +65,7 @@ def test_create_artist_name_in_use(session: Session, artist: Artist):
     """
     user2 = create_randomized_test_user(session)
     artist_schema = ArtistCreateSchema(
-        name="Test Artist",
+        name=DEFAULT_ARTIST_CREATE_INFO["name"],
         description="Test Description 2",
     )
     with pytest.raises(ArtistNameInUse) as exc_info:
