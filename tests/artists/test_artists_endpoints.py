@@ -330,12 +330,10 @@ def test_get_followed_artists(client: TestClient):
     assert response.status_code == 200
     assert len(response.json()) == 3
     for artist in response.json():
-        assert "id" in artist
         assert artist == {
             **DEFAULT_ARTIST_INFO,
             "name": anything,
             "description": anything,
-            "id": artist["id"],
             "follower_count": 1,
         }
 

@@ -32,6 +32,8 @@ _BASE_DEFAULT_USER_INFO = {
 
 DEFAULT_USER_INFO = {
     "id": anything,
+    "created_at": anything,
+    "updated_at": anything,
     **_BASE_DEFAULT_USER_INFO,
 }
 
