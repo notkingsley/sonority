@@ -21,6 +21,17 @@ def artist(db: Session, user: CurrentUser):
     return artist
 
 
+def artist_by_id(db: Session, artist_id: UUID):
+    """
+    Get an artist by id
+    """
+    artist = get_artist_by_id(db, artist_id)
+    if not artist:
+        raise ArtistNotFound("Artist not found")
+
+    return artist
+    
+
 def artist_or_none_by_id_or_name(db: Session, id: UUID = None, name: str = None):
     """
     Get an artist by id or name or return None if not found
@@ -46,6 +57,8 @@ def artist_by_id_or_name(
 
     return artist
 
+
+ArtistById = Annotated[Artist, Depends(artist_by_id)]
 
 ArtistByIdOrName = Annotated[Artist, Depends(artist_by_id_or_name)]
 

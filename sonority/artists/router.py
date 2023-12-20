@@ -1,6 +1,8 @@
-from fastapi import APIRouter, status
+from typing import Annotated, Literal
 
-from sonority.artists.dependencies import ArtistByIdOrName, CurrentArtist
+from fastapi import APIRouter, Query, status
+
+from sonority.artists.dependencies import ArtistById, ArtistByIdOrName, CurrentArtist
 from sonority.artists import service
 from sonority.artists.schemas import (
     ArtistCreateSchema,
@@ -57,7 +59,7 @@ def verify_artist(db: Session, artist: CurrentArtist):
     """
     Verify the current user's artist profile
 
-    This doesn't actually do anything.
+    This doesn't actually do any verification, it just sets the `is_verified`
     """
     return service.verify_artist(db, artist)
 
@@ -68,3 +70,40 @@ def get_artist_by_id_or_name(artist: ArtistByIdOrName, _: CurrentUser):
     Get an artist by ID or name
     """
     return artist
+
+
+@router.post("/{artist_id}/follow")
+def follow_artist(
+    db: Session,
+    artist: ArtistById,
+    user: CurrentUser,
+) -> dict[Literal["followed"], bool]:
+    """
+    Follow an artist
+    """
+    return {"followed": service.follow_artist(db, artist, user)}
+
+
+@router.post("/{artist_id}/unfollow")
+def unfollow_artist(
+    db: Session,
+    artist: ArtistById,
+    user: CurrentUser,
+) -> dict[Literal["unfollowed"], bool]:
+    """
+    Unfollow an artist
+    """
+    return {"unfollowed": service.unfollow_artist(db, artist, user)}
+
+
+@router.get("/me/follows", response_model=list[ArtistOutSchema])
+def get_followed_artists(
+    db: Session,
+    user: CurrentUser,
+    skip: Annotated[int, Query(..., ge=0, alias="offset")] = 0,
+    take: Annotated[int, Query(..., ge=1, le=50, alias="limit")] = 20,
+):
+    """
+    Get the artists that the current user follows
+    """
+    return service.get_follows(db, user, skip=skip, take=take)

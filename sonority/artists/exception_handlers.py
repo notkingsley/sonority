@@ -6,6 +6,7 @@ from sonority.artists.exceptions import (
     ArtistNameInUse,
     ArtistNotFound,
     BadParameters,
+    CannotFollowSelf,
     DeniedNotArtist,
     VerifiedArtistIsImmutable,
 )
@@ -39,6 +40,13 @@ async def bad_parameters_exception_handler(request, exc: BadParameters):
     )
 
 
+async def cannot_follow_self_exception_handler(request, exc: CannotFollowSelf):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": exc.args[0]},
+    )
+
+
 async def denied_not_artist_exception_handler(request, exc: DeniedNotArtist):
     return JSONResponse(
         status_code=status.HTTP_403_FORBIDDEN,
@@ -60,6 +68,7 @@ exception_handlers = {
     ArtistNameInUse: artist_name_in_use_exception_handler,
     ArtistNotFound: artist_not_found_exception_handler,
     BadParameters: bad_parameters_exception_handler,
+    CannotFollowSelf: cannot_follow_self_exception_handler,
     DeniedNotArtist: denied_not_artist_exception_handler,
     VerifiedArtistIsImmutable: verified_artist_is_immutable_exception_handler,
 }
