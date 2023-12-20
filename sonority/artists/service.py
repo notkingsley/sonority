@@ -197,15 +197,20 @@ def get_follows(db: Session, user: User, *, skip: int, take: int):
     """
     Get a list of artists that a user is following
     """
-    return (
-        db.execute(
-            select(Artist)
-            .join(Follow)
-            .where(Follow.follower_id == user.id)
-            .order_by(Follow.created_at.desc())
-            .offset(skip)
-            .limit(take)
-        )
-        .scalars()
-        .all()
-    )
+    rows = db.execute(
+        select(Artist, func.count(Follow.follower_id).label("follower_count"))
+        .join(Follow, Artist.id == Follow.artist_id, isouter=True)
+        .where(Follow.follower_id == user.id)
+        .group_by(Artist.id)
+        .order_by(Follow.created_at.desc())
+        .offset(skip)
+        .limit(take)
+    ).all()
+
+    artists: list[Artist] = []
+    for row in rows:
+        artist, follower_count = row._tuple()
+        artist.follower_count = follower_count
+        artists.append(artist)
+
+    return artists
