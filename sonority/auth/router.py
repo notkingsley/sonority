@@ -100,7 +100,7 @@ def change_password(
 
 
 @router.get("/{user_id}", response_model=Union[UserOutSchema, None])
-def get_user(db: Session, user_id: UUID):
+def get_user(db: Session, user_id: UUID, _: CurrentUser):
     """
     Get a user by id
     """
