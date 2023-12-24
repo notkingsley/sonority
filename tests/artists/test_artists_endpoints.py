@@ -51,7 +51,7 @@ def test_get_artist_by_id(artist_client: TestClient):
     client = utils.create_randomized_test_client()
     response = client.get(f"/artists?id={artist_id}")
     assert response.status_code == 200
-    assert response.json() == {**DEFAULT_ARTIST_INFO}
+    assert response.json() == {"artist": {**DEFAULT_ARTIST_INFO}, "is_following": False}
 
 
 def test_get_artist_by_id_not_found(client: TestClient):
@@ -73,7 +73,7 @@ def test_get_artist_by_name(artist_client: TestClient):
     client = utils.create_randomized_test_client()
     response = client.get("/artists?name=Test Artist")
     assert response.status_code == 200
-    assert response.json() == {**DEFAULT_ARTIST_INFO}
+    assert response.json() == {"artist": {**DEFAULT_ARTIST_INFO}, "is_following": False}
 
 
 def test_get_artist_by_name_not_found(client: TestClient):
@@ -94,6 +94,21 @@ def test_get_artist_by_id_and_name(client: TestClient):
     )
     assert response.status_code == 400
     assert response.json() == {"detail": "Only one of id or name can be provided"}
+
+
+def test_get_artist_following(artist_client: TestClient):
+    """
+    Test getting an artist that is being followed
+    """
+    artist_id = artist_client.get("/artists/me").json()["id"]
+    client = utils.create_randomized_test_client()
+    assert client.post(f"/artists/{artist_id}/follow").status_code == 200
+    response = client.get(f"/artists?id={artist_id}")
+    assert response.status_code == 200
+    assert response.json() == {
+        "artist": {**DEFAULT_ARTIST_INFO, "follower_count": 1},
+        "is_following": True,
+    }
 
 
 def test_get_artist_me(artist_client: TestClient):
