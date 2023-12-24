@@ -8,6 +8,7 @@ from sonority.artists.schemas import (
     ArtistCreateSchema,
     ArtistOutSchema,
     ArtistUpdateSchema,
+    GetArtistSchema,
 )
 from sonority.auth.dependencies import CurrentUser
 from sonority.database import Session
@@ -64,12 +65,12 @@ def verify_artist(db: Session, artist: CurrentArtist):
     return service.verify_artist(db, artist)
 
 
-@router.get("/", response_model=ArtistOutSchema)
-def get_artist_by_id_or_name(artist: ArtistByIdOrName, _: CurrentUser):
+@router.get("/", response_model=GetArtistSchema)
+def get_artist_by_id_or_name(db: Session, artist: ArtistByIdOrName, user: CurrentUser):
     """
     Get an artist by ID or name
     """
-    return artist
+    return {"artist": artist, "is_following": service.follows(db, user, artist)}
 
 
 @router.post("/{artist_id}/follow")

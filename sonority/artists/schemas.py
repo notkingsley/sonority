@@ -41,3 +41,12 @@ class ArtistSchema(ArtistOutSchema):
     """
 
     pass
+
+
+class GetArtistSchema(BaseModel):
+    """
+    Schema for an artist as returned by the API
+    """
+
+    artist: ArtistOutSchema
+    is_following: bool
