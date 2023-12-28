@@ -106,3 +106,11 @@ def artist_client(client: TestClient):
     Returns a test client instance authenticated as an artist.
     """
     return utils.create_test_artist_client(client)
+
+
+@pytest.fixture(scope="function")
+def album(session: Session, artist):
+    """
+    Returns an album
+    """
+    return utils.create_test_album(session, artist)

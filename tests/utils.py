@@ -3,6 +3,9 @@ import secrets
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from sonority.albums.models import Album
+from sonority.albums.schemas import AlbumCreateSchema
+from sonority.albums.service import create_album
 from sonority.artists.models import Artist
 from sonority.artists.schemas import ArtistCreateSchema
 from sonority.artists.service import create_artist
@@ -52,6 +55,11 @@ DEFAULT_ARTIST_INFO = {
     "is_verified": False,
     "follower_count": 0,
     **DEFAULT_ARTIST_CREATE_INFO,
+}
+
+DEFAULT_ALBUM_CREATE_INFO = {
+    "name": "Test Album",
+    "album_type": "album",
 }
 
 
@@ -172,3 +180,22 @@ def create_randomized_test_artist_client() -> TestClient:
     client.post("/artists/new", json=data)
 
     return client
+
+
+def create_test_album(session: Session, artist: Artist) -> Album:
+    """
+    Create a test album
+    """
+    album_schema = AlbumCreateSchema(**DEFAULT_ALBUM_CREATE_INFO)
+    return create_album(session, album_schema, artist)
+
+
+def create_randomized_test_album(session: Session, artist: Artist) -> Album:
+    """
+    Create a randomized test album
+    """
+    album_schema = AlbumCreateSchema(
+        name=f"Test Album {secrets.token_hex(16)}",
+        album_type="album",
+    )
+    return create_album(session, album_schema, artist)
