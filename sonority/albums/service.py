@@ -91,14 +91,24 @@ def release_album(db: Session, album: Album):
     return _commit_and_refresh(db, album)
 
 
-def get_all_albums(db: Session, artist: Artist):
+def get_all_albums(db: Session, artist: Artist, *, skip: int, take: int):
     """
     Get all albums for an artist
     """
-    return db.execute(select(Album).where(Album.artist_id == artist.id)).scalars().all()
+    return (
+        db.execute(
+            select(Album)
+            .where(Album.artist_id == artist.id)
+            .order_by(Album.updated_at.desc())
+            .offset(skip)
+            .limit(take)
+        )
+        .scalars()
+        .all()
+    )
 
 
-def get_released_albums(db: Session, artist: Artist):
+def get_released_albums(db: Session, artist: Artist, *, skip: int, take: int):
     """
     Get released albums for an artist
     """
@@ -107,13 +117,15 @@ def get_released_albums(db: Session, artist: Artist):
             select(Album)
             .where(Album.artist_id == artist.id, Album.released == True)
             .order_by(Album.release_date.desc())
+            .offset(skip)
+            .limit(take)
         )
         .scalars()
         .all()
     )
 
 
-def get_unreleased_albums(db: Session, artist: Artist):
+def get_unreleased_albums(db: Session, artist: Artist, *, skip: int, take: int):
     """
     Get unreleased albums for an artist
     """
@@ -122,6 +134,8 @@ def get_unreleased_albums(db: Session, artist: Artist):
             select(Album)
             .where(Album.artist_id == artist.id, Album.released == False)
             .order_by(Album.updated_at.desc())
+            .offset(skip)
+            .limit(take)
         )
         .scalars()
         .all()
