@@ -104,7 +104,9 @@ def get_released_albums(db: Session, artist: Artist):
     """
     return (
         db.execute(
-            select(Album).where(Album.artist_id == artist.id, Album.released == True)
+            select(Album)
+            .where(Album.artist_id == artist.id, Album.released == True)
+            .order_by(Album.release_date.desc())
         )
         .scalars()
         .all()
@@ -117,7 +119,9 @@ def get_unreleased_albums(db: Session, artist: Artist):
     """
     return (
         db.execute(
-            select(Album).where(Album.artist_id == artist.id, Album.released == False)
+            select(Album)
+            .where(Album.artist_id == artist.id, Album.released == False)
+            .order_by(Album.updated_at.desc())
         )
         .scalars()
         .all()
