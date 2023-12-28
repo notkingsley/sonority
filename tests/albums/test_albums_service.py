@@ -158,7 +158,7 @@ def test_get_all_albums(session: Session, album: Album, artist: Artist):
     release_album(session, album)
     release_album(session, album3)
 
-    albums = get_all_albums(session, artist)
+    albums = get_all_albums(session, artist, skip=0, take=10)
     assert set(albums) == {album, album2, album3, album4}
 
 
@@ -172,7 +172,7 @@ def test_get_released_albums(session: Session, album: Album, artist: Artist):
     release_album(session, album)
     release_album(session, album3)
 
-    albums = get_released_albums(session, artist)
+    albums = get_released_albums(session, artist, skip=0, take=10)
     assert set(albums) == {album, album3}
 
 
@@ -186,5 +186,5 @@ def test_get_unreleased_albums(session: Session, album: Album, artist: Artist):
     release_album(session, album)
     release_album(session, album3)
 
-    albums = get_unreleased_albums(session, artist)
+    albums = get_unreleased_albums(session, artist, skip=0, take=10)
     assert set(albums) == {album2, album4}
