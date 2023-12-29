@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 from sonority.auth.models import User
 from sonority.auth.service import login_user_from_token
-from sonority.database import Session
+from sonority.dependencies import Session
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")

@@ -1,4 +1,6 @@
 import pytest
+from sqlalchemy.orm import Session
+
 from sonority.albums.exceptions import (
     AlbumAlreadyReleased,
     AlbumNameInUse,
@@ -18,7 +20,6 @@ from sonority.albums.service import (
     update_album,
 )
 from sonority.artists.models import Artist
-from sonority.database import Session
 from tests.utils import DEFAULT_ALBUM_CREATE_INFO, create_randomized_test_album
 
 

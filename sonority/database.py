@@ -1,10 +1,8 @@
 import os
-from typing import Annotated
 
 from dotenv import load_dotenv
-from fastapi import Depends
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session as SQLAlchemySession
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 
 
@@ -48,5 +46,3 @@ load_dotenv()
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-
-Session = Annotated[SQLAlchemySession, Depends(get_new_db_session)]

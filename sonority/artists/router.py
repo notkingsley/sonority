@@ -1,6 +1,6 @@
-from typing import Annotated, Literal
+from typing import Literal
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, status
 
 from sonority.artists.dependencies import ArtistById, ArtistByIdOrName, CurrentArtist
 from sonority.artists import service
@@ -11,8 +11,7 @@ from sonority.artists.schemas import (
     GetArtistSchema,
 )
 from sonority.auth.dependencies import CurrentUser
-from sonority.database import Session
-from sonority.dependencies import Skip, Take, SKIP_DEFAULT, TAKE_DEFAULT
+from sonority.dependencies import Session, Skip, Take, SKIP_DEFAULT, TAKE_DEFAULT
 
 
 router = APIRouter(prefix="/artists", tags=["artists"])

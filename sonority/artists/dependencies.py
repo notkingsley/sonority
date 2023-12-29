@@ -7,7 +7,7 @@ from sonority.artists.exceptions import ArtistNotFound, BadParameters, DeniedNot
 from sonority.artists.models import Artist
 from sonority.artists.service import get_artist_by_id, get_artist_by_name
 from sonority.auth.dependencies import CurrentUser
-from sonority.database import Session
+from sonority.dependencies import Session
 
 
 def artist(db: Session, user: CurrentUser):

@@ -22,7 +22,7 @@ from sonority.auth.service import (
     register_user,
     update_user,
 )
-from sonority.database import Session
+from sonority.dependencies import Session
 
 
 router = APIRouter(prefix="/users", tags=["users"])
