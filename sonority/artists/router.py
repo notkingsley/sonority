@@ -12,6 +12,7 @@ from sonority.artists.schemas import (
 )
 from sonority.auth.dependencies import CurrentUser
 from sonority.database import Session
+from sonority.dependencies import Skip, Take, SKIP_DEFAULT, TAKE_DEFAULT
 
 
 router = APIRouter(prefix="/artists", tags=["artists"])
@@ -101,8 +102,8 @@ def unfollow_artist(
 def get_followed_artists(
     db: Session,
     user: CurrentUser,
-    skip: Annotated[int, Query(..., ge=0, alias="offset")] = 0,
-    take: Annotated[int, Query(..., ge=1, le=50, alias="limit")] = 20,
+    skip: Skip = SKIP_DEFAULT,
+    take: Take = TAKE_DEFAULT,
 ):
     """
     Get the artists that the current user follows
