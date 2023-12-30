@@ -20,7 +20,11 @@ from sonority.albums.service import (
     update_album,
 )
 from sonority.artists.models import Artist
-from tests.utils import DEFAULT_ALBUM_CREATE_INFO, create_randomized_test_album
+from tests.utils import (
+    DEFAULT_ALBUM_CREATE_INFO,
+    create_randomized_test_album,
+    create_randomized_test_artist,
+)
 
 
 def test_create_album(session: Session, artist: Artist):
@@ -56,6 +60,29 @@ def test_create_album_name_in_use(session: Session, artist: Artist, album: Album
     assert exc_info.value.args[0] == "Album name is already in use"
 
 
+def test_create_album_name_in_use_different_artist(session: Session, album: Album):
+    """
+    Test creating an album with a name that is already in use by a different artist
+    """
+    album_schema = AlbumCreateSchema(**DEFAULT_ALBUM_CREATE_INFO)
+    artist2 = create_randomized_test_artist(session)
+    album = create_album(session, album_schema, artist2)
+    assert album.name == album_schema.name
+    assert album.album_type == album_schema.album_type
+    assert album.artist_id == artist2.id
+    assert album.released is False
+    assert album.release_date is None
+    assert album.track_count == 0
+
+    album = get_album_by_id(session, album.id)
+    assert album.name == album_schema.name
+    assert album.album_type == album_schema.album_type
+    assert album.artist_id == artist2.id
+    assert album.released is False
+    assert album.release_date is None
+    assert album.track_count == 0
+
+
 def test_update_album_name(session: Session, album: Album):
     """
     Test updating an album with a new name
@@ -75,6 +102,19 @@ def test_update_album_name_in_use(session: Session, album: Album, artist: Artist
         update_album(session, album, album_schema)
 
     assert exc_info.value.args[0] == "Album name is already in use"
+
+
+def test_update_album_name_in_use_different_artist(session: Session, album: Album):
+    """
+    Test updating an album with a name that is already in use by a different artist
+    """
+    album2 = create_randomized_test_album(session)
+    album_schema = AlbumUpdateSchema(name=album2.name)
+    album = update_album(session, album, album_schema)
+    assert album.name == album_schema.name
+
+    album = get_album_by_id(session, album.id)
+    assert album.name == album_schema.name
 
 
 def test_update_album_type(session: Session, album: Album):
