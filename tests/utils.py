@@ -62,6 +62,18 @@ DEFAULT_ALBUM_CREATE_INFO = {
     "album_type": "album",
 }
 
+DEFAULT_UNRELEASED_ALBUM_INFO = {
+    "id": anything,
+    "track_count": 0,
+    "artist_id": anything,
+    **DEFAULT_ALBUM_CREATE_INFO,
+}
+
+DEFAULT_RELEASED_ALBUM_INFO = {
+    "release_date": anything,
+    **DEFAULT_UNRELEASED_ALBUM_INFO,
+}
+
 
 def create_test_user(session: Session) -> User:
     """
@@ -190,12 +202,46 @@ def create_test_album(session: Session, artist: Artist) -> Album:
     return create_album(session, album_schema, artist)
 
 
-def create_randomized_test_album(session: Session, artist: Artist) -> Album:
+def create_randomized_test_album(
+    session: Session, artist: Artist | None = None
+) -> Album:
     """
     Create a randomized test album
     """
+    artist = artist or create_randomized_test_artist(session)
     album_schema = AlbumCreateSchema(
         name=f"Test Album {secrets.token_hex(16)}",
         album_type="album",
     )
     return create_album(session, album_schema, artist)
+
+
+def create_test_album_client(client: TestClient) -> TestClient:
+    """
+    Create a test album for an artist
+    """
+    data = {**DEFAULT_ALBUM_CREATE_INFO}
+    client.post("/albums/new", json=data)
+    return client
+
+
+def create_randomized_test_album_for_artist_client(artist_client: TestClient):
+    """
+    Create a randomized test album for an artist client
+
+    Returns the album info
+    """
+    data = {
+        "name": f"Test Album {secrets.token_hex(16)}",
+        "album_type": "album",
+    }
+    return artist_client.post("/albums/new", json=data).json()
+
+
+def create_randomized_test_album_client() -> TestClient:
+    """
+    Create a randomized test artist client with a randomized album
+    """
+    client = create_randomized_test_artist_client()
+    create_randomized_test_album_for_artist_client(client)
+    return client
