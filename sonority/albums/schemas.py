@@ -31,6 +31,8 @@ class UnreleasedAlbumSchema(AlbumCreateSchema):
     """
 
     id: UUID
+    track_count: int
+    artist_id: UUID
 
     model_config = ConfigDict(from_attributes=True, **AlbumCreateSchema.model_config)
 
@@ -41,8 +43,6 @@ class AlbumOutSchema(UnreleasedAlbumSchema):
     """
 
     release_date: date
-    artist_id: UUID
-    track_count: int
 
 
 class AlbumSchema(AlbumOutSchema):

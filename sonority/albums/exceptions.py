@@ -20,3 +20,19 @@ class AlbumAlreadyReleased(Exception):
     """
 
     pass
+
+
+class AlbumDoesNotExist(Exception):
+    """
+    Exception raised when an album does not exist
+    """
+
+    pass
+
+
+class AlbumNotOwned(Exception):
+    """
+    Exception raised when an album is not owned by the current artist
+    """
+
+    pass
