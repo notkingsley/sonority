@@ -37,11 +37,22 @@ def get_album_by_name(db: Session, name: str):
     return db.execute(select(Album).where(Album.name == name)).scalar_one_or_none()
 
 
+def has_album_by_name(db: Session, name: str, artist_id: UUID):
+    """
+    Check if an album exists by name for an artist
+    """
+    return bool(
+        db.execute(
+            select(Album.id).where(Album.name == name, Album.artist_id == artist_id)
+        ).scalar_one_or_none()
+    )
+
+
 def create_album(db: Session, album_schema: AlbumCreateSchema, artist: Artist):
     """
     Create an album
     """
-    if get_album_by_name(db, album_schema.name):
+    if has_album_by_name(db, album_schema.name, artist.id):
         raise AlbumNameInUse("Album name is already in use")
 
     album = Album(**album_schema.model_dump(), artist_id=artist.id)
@@ -60,7 +71,7 @@ def update_album(db: Session, album: Album, album_schema: AlbumUpdateSchema):
         return album
 
     if album_schema.name and album_schema.name != album.name:
-        if get_album_by_name(db, album_schema.name):
+        if has_album_by_name(db, album_schema.name, album.artist_id):
             raise AlbumNameInUse("Album name is already in use")
 
         album.name = album_schema.name

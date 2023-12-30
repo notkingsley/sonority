@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from sonority.database import Base
@@ -13,6 +13,9 @@ class Album(Base):
     """
 
     __tablename__ = "albums"
+    __table_args__ = (
+        UniqueConstraint("name", "artist_id", name="uq_album_name_artist_id"),
+    )
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     name: Mapped[str] = mapped_column(nullable=False, index=True)
