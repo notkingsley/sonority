@@ -5,8 +5,9 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from sonority.auth.models import User
+from sonority.albums.models import Album
 from sonority.artists.models import Artist
+from sonority.auth.models import User
 from sonority.database import Base
 
 # this is the Alembic Config object, which provides
