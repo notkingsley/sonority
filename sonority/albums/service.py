@@ -9,7 +9,7 @@ from sonority.albums.exceptions import (
     AlbumNameInUse,
     ReleasedAlbumIsImmutable,
 )
-from sonority.albums.models import Album
+from sonority.albums.models import Album, Likes
 from sonority.albums.schemas import AlbumCreateSchema, AlbumUpdateSchema
 from sonority.artists.models import Artist
 
@@ -145,6 +145,66 @@ def get_unreleased_albums(db: Session, artist: Artist, *, skip: int, take: int):
             select(Album)
             .where(Album.artist_id == artist.id, Album.released == False)
             .order_by(Album.updated_at.desc())
+            .offset(skip)
+            .limit(take)
+        )
+        .scalars()
+        .all()
+    )
+
+
+def _get_like(db: Session, album_id: UUID, user_id: UUID):
+    """
+    Get a like for an album by a user
+    """
+    return db.execute(
+        select(Likes).where(Likes.album_id == album_id, Likes.user_id == user_id)
+    ).scalar_one_or_none()
+
+
+def likes(db: Session, album: Album, user_id: UUID):
+    """
+    Check if a user likes an album
+    """
+    return _get_like(db, album.id, user_id) is not None
+
+
+def like_album(db: Session, album: Album, user_id: UUID):
+    """
+    Like an album
+    """
+    if likes(db, album, user_id):
+        return False
+
+    like = Likes(album_id=album.id, user_id=user_id)
+    db.add(like)
+    db.commit()
+    return True
+
+
+def unlike_album(db: Session, album: Album, user_id: UUID):
+    """
+    Unlike an album
+    """
+    like = _get_like(db, album.id, user_id)
+    if not like:
+        return False
+
+    db.delete(like)
+    db.commit()
+    return True
+
+
+def get_liked_albums(db: Session, user_id: UUID, *, skip: int, take: int):
+    """
+    Get a list of albums that a user likes
+    """
+    return (
+        db.execute(
+            select(Album)
+            .join(Likes, Album.id == Likes.album_id)
+            .where(Likes.user_id == user_id)
+            .order_by(Likes.created_at.desc())
             .offset(skip)
             .limit(take)
         )

@@ -32,3 +32,21 @@ class Album(Base):
     updated_at: Mapped[datetime] = mapped_column(
         nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
     )
+
+
+class Likes(Base):
+    """
+    Model for liking an album
+    """
+
+    __tablename__ = "album_likes"
+
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id"), primary_key=True, index=True
+    )
+    album_id: Mapped[UUID] = mapped_column(
+        ForeignKey("albums.id"), primary_key=True, index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        nullable=False, default=datetime.utcnow
+    )
