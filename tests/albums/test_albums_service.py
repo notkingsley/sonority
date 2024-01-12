@@ -14,9 +14,13 @@ from sonority.albums.service import (
     get_album_by_id,
     get_album_by_name,
     get_all_albums,
+    get_liked_albums,
     get_released_albums,
     get_unreleased_albums,
+    like_album,
+    likes,
     release_album,
+    unlike_album,
     update_album,
 )
 from sonority.artists.models import Artist
@@ -24,6 +28,7 @@ from tests.utils import (
     DEFAULT_ALBUM_CREATE_INFO,
     create_randomized_test_album,
     create_randomized_test_artist,
+    create_randomized_test_user,
 )
 
 
@@ -229,3 +234,61 @@ def test_get_unreleased_albums(session: Session, album: Album, artist: Artist):
 
     albums = get_unreleased_albums(session, artist, skip=0, take=10)
     assert set(albums) == {album2, album4}
+
+
+def test_like_album(session: Session, album: Album):
+    """
+    Test liking an album
+    """
+    user = create_randomized_test_user(session)
+    assert like_album(session, album, user.id)
+    assert likes(session, album, user.id) is True
+
+
+def test_like_album_already_liked(session: Session, album: Album):
+    """
+    Test liking an album that is already liked
+    """
+    user = create_randomized_test_user(session)
+    assert like_album(session, album, user.id)
+    assert likes(session, album, user.id) is True
+
+    assert like_album(session, album, user.id) is False
+    assert likes(session, album, user.id) is True
+
+
+def test_unlike_album(session: Session, album: Album):
+    """
+    Test unliking an album
+    """
+    user = create_randomized_test_user(session)
+    assert like_album(session, album, user.id)
+    assert likes(session, album, user.id) is True
+
+    assert unlike_album(session, album, user.id)
+    assert likes(session, album, user.id) is False
+
+
+def test_unlike_album_not_liked(session: Session, album: Album):
+    """
+    Test unliking an album that is not liked
+    """
+    user = create_randomized_test_user(session)
+    assert unlike_album(session, album, user.id) is False
+    assert likes(session, album, user.id) is False
+
+
+def test_get_liked_albums(session: Session):
+    """
+    Test getting liked albums
+    """
+    user = create_randomized_test_user(session)
+    album1 = create_randomized_test_album(session)
+    album2 = create_randomized_test_album(session)
+    album3 = create_randomized_test_album(session)
+    like_album(session, album1, user.id)
+    like_album(session, album2, user.id)
+    like_album(session, album3, user.id)
+
+    albums = get_liked_albums(session, user.id, skip=0, take=10)
+    assert set(albums) == {album1, album2, album3}
