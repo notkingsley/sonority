@@ -212,9 +212,9 @@ def test_get_released_albums(session: Session, album: Album, artist: Artist):
     """
     Test getting released albums
     """
-    album2 = create_randomized_test_album(session, artist)
+    album2 = create_randomized_test_album(session, artist)  # noqa
     album3 = create_randomized_test_album(session, artist)
-    album4 = create_randomized_test_album(session, artist)
+    album4 = create_randomized_test_album(session, artist)  # noqa
     release_album(session, album)
     release_album(session, album3)
 

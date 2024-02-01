@@ -45,11 +45,18 @@ def test_new_album_name_in_use_different_artist(client_local: TestClient):
     assert response.json() == {**DEFAULT_UNRELEASED_ALBUM_INFO}
 
 
+def new_album_id(client: TestClient):
+    """
+    Shortcut for creating a new album ID
+    """
+    return utils.create_randomized_test_album_for_artist_client(client)["id"]
+
+
 def test_update_album_name(client_local: TestClient):
     """
     Test updating an album with a new name
     """
-    album_id = utils.create_randomized_test_album_for_artist_client(client_local)["id"]
+    album_id = new_album_id(client_local)
     response = client_local.patch(
         f"/albums/{album_id}", json={"name": "New Test Album"}
     )
@@ -65,7 +72,7 @@ def test_update_album_name_in_use(client_local: TestClient):
     """
     Test updating an album with a name that is already in use
     """
-    album_id = utils.create_randomized_test_album_for_artist_client(client_local)["id"]
+    album_id = new_album_id(client_local)
     new_album_info = utils.create_randomized_test_album_for_artist_client(client_local)
     response = client_local.patch(
         f"/albums/{album_id}", json={"name": new_album_info["name"]}
@@ -78,7 +85,7 @@ def test_update_album_name_in_use_different_artist(client_local: TestClient):
     """
     Test updating an album with a name that is already in use by a different artist
     """
-    album_id = utils.create_randomized_test_album_for_artist_client(client_local)["id"]
+    album_id = new_album_id(client_local)
     client2 = utils.create_randomized_test_artist_client()
     new_album_info = utils.create_randomized_test_album_for_artist_client(client2)
     response = client_local.patch(
@@ -96,7 +103,7 @@ def test_update_album_type(client_local: TestClient):
     """
     Test updating an album with a new type
     """
-    album_id = utils.create_randomized_test_album_for_artist_client(client_local)["id"]
+    album_id = new_album_id(client_local)
     response = client_local.patch(f"/albums/{album_id}", json={"album_type": "single"})
     assert response.status_code == 200
     assert response.json() == {
@@ -111,7 +118,7 @@ def test_update_album_released(client_local: TestClient):
     """
     Test updating a released album
     """
-    album_id = utils.create_randomized_test_album_for_artist_client(client_local)["id"]
+    album_id = new_album_id(client_local)
     client_local.post(f"/albums/{album_id}/release")
     response = client_local.patch(
         f"/albums/{album_id}", json={"name": "New Test Album"}
@@ -124,7 +131,7 @@ def test_delete_album(client_local: TestClient):
     """
     Test deleting an album
     """
-    album_id = utils.create_randomized_test_album_for_artist_client(client_local)["id"]
+    album_id = new_album_id(client_local)
     response = client_local.delete(f"/albums/{album_id}")
     assert response.status_code == 204
     assert response.text == ""
@@ -138,7 +145,7 @@ def test_release_album(client_local: TestClient):
     """
     Test releasing an album
     """
-    album_id = utils.create_randomized_test_album_for_artist_client(client_local)["id"]
+    album_id = new_album_id(client_local)
     response = client_local.post(f"/albums/{album_id}/release")
     assert response.status_code == 200
     assert response.json() == {
@@ -152,7 +159,7 @@ def test_release_album_already_released(client_local: TestClient):
     """
     Test releasing an album that is already released
     """
-    album_id = utils.create_randomized_test_album_for_artist_client(client_local)["id"]
+    album_id = new_album_id(client_local)
     client_local.post(f"/albums/{album_id}/release")
     response = client_local.post(f"/albums/{album_id}/release")
     assert response.status_code == 409
@@ -163,7 +170,7 @@ def test_get_album(client_local: TestClient):
     """
     Test getting an album by ID
     """
-    album_id = utils.create_randomized_test_album_for_artist_client(client_local)["id"]
+    album_id = new_album_id(client_local)
     client_local.post(f"/albums/{album_id}/release")
     response = client_local.get(f"/albums/{album_id}")
     assert response.status_code == 200
@@ -178,7 +185,7 @@ def test_get_unreleased_album(client_local: TestClient):
     """
     Test getting an unreleased album by ID
     """
-    album_id = utils.create_randomized_test_album_for_artist_client(client_local)["id"]
+    album_id = new_album_id(client_local)
     response = client_local.get(f"/albums/drafts/{album_id}")
     assert response.status_code == 200
     assert response.json() == {
@@ -192,7 +199,7 @@ def test_get_released_album_as_unreleased(client_local: TestClient):
     """
     Test getting a released album as an unreleased album
     """
-    album_id = utils.create_randomized_test_album_for_artist_client(client_local)["id"]
+    album_id = new_album_id(client_local)
     client_local.post(f"/albums/{album_id}/release")
     response = client_local.get(f"/albums/drafts/{album_id}", follow_redirects=False)
     assert response.status_code == 307
@@ -205,7 +212,7 @@ def test_get_unreleased_album_as_released(client_local: TestClient):
     """
     Test getting an unreleased album as a released album
     """
-    album_id = utils.create_randomized_test_album_for_artist_client(client_local)["id"]
+    album_id = new_album_id(client_local)
     response = client_local.get(f"/albums/{album_id}")
     assert response.status_code == 404
     assert response.json() == {"detail": "Album does not exist"}
@@ -215,10 +222,10 @@ def test_get_unreleased_albums(artist_client: TestClient):
     """
     Test getting all unreleased albums
     """
-    id1 = utils.create_randomized_test_album_for_artist_client(artist_client)["id"]
-    id2 = utils.create_randomized_test_album_for_artist_client(artist_client)["id"]
-    id3 = utils.create_randomized_test_album_for_artist_client(artist_client)["id"]
-    id4 = utils.create_randomized_test_album_for_artist_client(artist_client)["id"]
+    id1 = new_album_id(artist_client)
+    id2 = new_album_id(artist_client)
+    id3 = new_album_id(artist_client)
+    id4 = new_album_id(artist_client)
     artist_client.post(f"/albums/{id1}/release")
     artist_client.post(f"/albums/{id3}/release")
 
@@ -242,10 +249,10 @@ def test_get_released_albums(artist_client: TestClient):
     """
     Test getting all released albums
     """
-    id1 = utils.create_randomized_test_album_for_artist_client(artist_client)["id"]
-    id2 = utils.create_randomized_test_album_for_artist_client(artist_client)["id"]
-    id3 = utils.create_randomized_test_album_for_artist_client(artist_client)["id"]
-    id4 = utils.create_randomized_test_album_for_artist_client(artist_client)["id"]
+    id1 = new_album_id(artist_client)
+    id2 = new_album_id(artist_client)  # noqa
+    id3 = new_album_id(artist_client)
+    id4 = new_album_id(artist_client)  # noqa
     artist_client.post(f"/albums/{id1}/release")
     artist_client.post(f"/albums/{id3}/release")
 
@@ -258,13 +265,13 @@ def test_get_released_albums(artist_client: TestClient):
 
 
 def test_get_all_albums_by_artist(artist_client: TestClient):
-    """ 
+    """
     Test getting all albums by an artist
     """
-    id1 = utils.create_randomized_test_album_for_artist_client(artist_client)["id"]
-    id2 = utils.create_randomized_test_album_for_artist_client(artist_client)["id"]
-    id3 = utils.create_randomized_test_album_for_artist_client(artist_client)["id"]
-    id4 = utils.create_randomized_test_album_for_artist_client(artist_client)["id"]
+    id1 = new_album_id(artist_client)
+    id2 = new_album_id(artist_client)  # noqa
+    id3 = new_album_id(artist_client)
+    id4 = new_album_id(artist_client)  # noqa
     artist_id = artist_client.get("/artists/me").json()["id"]
     artist_client.post(f"/albums/{id1}/release")
     artist_client.post(f"/albums/{id3}/release")
