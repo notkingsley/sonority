@@ -122,3 +122,18 @@ def artist_with_album_client(artist_client: TestClient):
     Returns a test client instance authenticated as an artist with an album.
     """
     return utils.create_test_album_client(artist_client)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def clean_test_tracks_dir():
+    """
+    Delete the test tracks directory on each test run.
+    """
+    from shutil import rmtree
+
+    if settings.TEST_TRACKS_DIR.exists():
+        rmtree(settings.TEST_TRACKS_DIR, ignore_errors=True)
+    settings.TEST_TRACKS_DIR.mkdir(parents=True, exist_ok=True)
+    yield
+    if settings.TEST_TRACKS_DIR.exists():
+        rmtree(settings.TEST_TRACKS_DIR, ignore_errors=True)
