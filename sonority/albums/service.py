@@ -126,7 +126,7 @@ def get_released_albums(db: Session, artist: Artist, *, skip: int, take: int):
     return (
         db.execute(
             select(Album)
-            .where(Album.artist_id == artist.id, Album.released == True)
+            .where(Album.artist_id == artist.id, Album.released == True)  # noqa
             .order_by(Album.release_date.desc())
             .offset(skip)
             .limit(take)
@@ -143,7 +143,7 @@ def get_unreleased_albums(db: Session, artist: Artist, *, skip: int, take: int):
     return (
         db.execute(
             select(Album)
-            .where(Album.artist_id == artist.id, Album.released == False)
+            .where(Album.artist_id == artist.id, Album.released == False)  # noqa
             .order_by(Album.updated_at.desc())
             .offset(skip)
             .limit(take)
