@@ -1,21 +1,11 @@
 from datetime import datetime, timedelta
-import os
 from uuid import UUID
 
-from dotenv import load_dotenv
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
-
-load_dotenv()
-
-SECRET_KEY = os.environ.get("SECRET_KEY")
-HASH_ALGORITHM = os.environ.get("HASH_ALGORITHM")
-ACCESS_TOKEN_EXPIRE_IN = int(os.environ.get("ACCESS_TOKEN_EXPIRE_IN"))  # minutes
-
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from sonority import settings
 
 
 class TokenData(BaseModel):
@@ -30,7 +20,8 @@ def hash_password(password: str):
     """
     Return the hash of password
     """
-    return pwd_context.hash(password)
+    context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    return context.hash(password)
 
 
 def verify_password(hash: str, password: str):
@@ -39,7 +30,8 @@ def verify_password(hash: str, password: str):
 
     Return True if the passwords match
     """
-    return pwd_context.verify(password, hash)
+    context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    return context.verify(password, hash)
 
 
 def decode_token(token: str):
@@ -47,7 +39,9 @@ def decode_token(token: str):
     Decode and validate the contents of token and return the TokenData or None
     """
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[HASH_ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.HASH_ALGORITHM]
+        )
     except JWTError:
         return None
 
@@ -64,6 +58,6 @@ def make_token(token_data: TokenData):
     """
     to_encode = {
         "sub": str(token_data.user_id),
-        "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_IN),
+        "exp": datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_IN),
     }
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=HASH_ALGORITHM)
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.HASH_ALGORITHM)
