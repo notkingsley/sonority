@@ -2,4 +2,4 @@ venv
 *.pyc
 .env
 .vscode
-*.sqlite3
+assets/
