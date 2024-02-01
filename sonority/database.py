@@ -27,7 +27,7 @@ def init_db(_engine=None, url: str = None):
     Create all tables in the database.
     """
     url = url or settings.DATABASE_URL
-    _engine = _engine or create_engine(url, connect_args={"check_same_thread": False})
+    _engine = _engine or create_engine(url)
     Base.metadata.create_all(bind=_engine)
 
 
@@ -36,8 +36,8 @@ def drop_db(_engine=None, url: str = None):
     Drop all tables in the database.
     """
     url = url or settings.DATABASE_URL
-    _engine = _engine or create_engine(url, connect_args={"check_same_thread": False})
+    _engine = _engine or create_engine(url)
     Base.metadata.drop_all(bind=_engine)
 
 
-engine = create_engine(settings.DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(settings.DATABASE_URL)

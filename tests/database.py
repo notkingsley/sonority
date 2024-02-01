@@ -9,8 +9,6 @@ def get_new_test_db_session():
         yield session
 
 
-engine = create_engine(
-    settings.TEST_DATABSE_URL, connect_args={"check_same_thread": False}
-)
+engine = create_engine(settings.TEST_DATABSE_URL)
 
 Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
