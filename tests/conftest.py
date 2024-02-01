@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
 import pytest
 
-from tests.database import TEST_DATABSE_URL, Session
-from tests import utils
+from tests.database import Session
+from tests import settings, utils
 
 
 @pytest.fixture(scope="session")
@@ -31,11 +31,11 @@ def make_test_db():
     """
     from sqlalchemy_utils import create_database, database_exists, drop_database
 
-    if database_exists(TEST_DATABSE_URL):
-        drop_database(TEST_DATABSE_URL)
-    create_database(TEST_DATABSE_URL)
+    if database_exists(settings.TEST_DATABSE_URL):
+        drop_database(settings.TEST_DATABSE_URL)
+    create_database(settings.TEST_DATABSE_URL)
     yield
-    drop_database(TEST_DATABSE_URL)
+    drop_database(settings.TEST_DATABSE_URL)
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -45,9 +45,9 @@ def make_test_tables(make_test_db: None):
     """
     from sonority.database import drop_db, init_db
 
-    init_db(url=TEST_DATABSE_URL)
+    init_db(url=settings.TEST_DATABSE_URL)
     yield
-    drop_db(url=TEST_DATABSE_URL)
+    drop_db(url=settings.TEST_DATABSE_URL)
 
 
 @pytest.fixture(scope="function")
