@@ -1,13 +1,15 @@
 from logging.config import fileConfig
+import os
 
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
 
-from sonority.albums.models import Album
-from sonority.artists.models import Artist
-from sonority.auth.models import User
+from sonority.albums.models import Album  # noqa
+from sonority.artists.models import Artist  # noqa
+from sonority.auth.models import User  # noqa
 from sonority.database import Base
 
 # this is the Alembic Config object, which provides
@@ -43,7 +45,9 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    # url = config.get_main_option("sqlalchemy.url")
+    load_dotenv()
+    url = os.getenv("DATABASE_URL")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -62,8 +66,12 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    load_dotenv()
+    # url = config.get_main_option("sqlalchemy.url")
+    url = os.getenv("DATABASE_URL")
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        # config.get_section(config.config_ini_section, {}),
+        {"sqlalchemy.url": url},
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
