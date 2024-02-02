@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sonority.albums.exceptions import (
     AlbumAlreadyReleased,
     AlbumNameInUse,
+    AlbumNotOwned,
     ReleasedAlbumIsImmutable,
 )
 from sonority.albums.models import Album, Likes
@@ -60,12 +61,27 @@ def create_album(db: Session, album_schema: AlbumCreateSchema, artist: Artist):
     return _commit_and_refresh(db, album)
 
 
+def check_album_owner(album: Album, artist: Artist):
+    """
+    Check if an album belongs to an artist
+    """
+    if album.artist_id != artist.id:
+        raise AlbumNotOwned("Album does not belong to artist")
+
+
+def check_album_modifiable(album: Album):
+    """
+    Check if an album is modifiable
+    """
+    if album.released:
+        raise ReleasedAlbumIsImmutable("Released albums cannot be modified")
+
+
 def update_album(db: Session, album: Album, album_schema: AlbumUpdateSchema):
     """
     Update an album
     """
-    if album.released:
-        raise ReleasedAlbumIsImmutable("Released albums cannot be modified")
+    check_album_modifiable(album)
 
     if not any([album_schema.name, album_schema.album_type]):
         return album
