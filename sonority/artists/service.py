@@ -22,6 +22,7 @@ def _get_artist(db: Session, column, value):
         select(Artist, func.count(Follow.follower_id))
         .join(Follow, isouter=True)
         .where(column == value)
+        .group_by(Artist.id)
     ).one_or_none()
     if not row:
         return None
@@ -201,7 +202,7 @@ def get_follows(db: Session, user: User, *, skip: int, take: int):
         select(Artist, func.count(Follow.follower_id).label("follower_count"))
         .join(Follow, Artist.id == Follow.artist_id, isouter=True)
         .where(Follow.follower_id == user.id)
-        .group_by(Artist.id)
+        .group_by(Artist.id, Follow.created_at)
         .order_by(Follow.created_at.desc())
         .offset(skip)
         .limit(take)
